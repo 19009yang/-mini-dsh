@@ -13,8 +13,18 @@
 // 全局事件签名表：包内各处用 declare module 追加
 export interface Events {}
 
+/*定义一个Listener类型，用来给“事件监听函数”统一规定类型：
+  - 它是一个函数；
+  - 可以接收任意数量的参数：...args
+  - 每个参数都可以是任意类型：any[]
+  - 返回值也可以是任意类型：any
+*/
 type Listener = (...args: any[]) => any
 
+
+//定义带监听函数和"是否要插到队列前面"的判断值Hook
+  // prepend: true  → 放到监听器列表最前面，优先执行
+  // prepend: false → 放到末尾，按正常顺序执行
 export interface Hook {
   listener: Listener
   prepend: boolean
@@ -22,18 +32,25 @@ export interface Hook {
 
 export type DispatchMode = 'emit' | 'parallel' | 'serial' | 'waterfall'
 
-/** 把一个事件类型对应的监听器函数类型提取出来 */
+/** 把一个事件类型对应的监听器函数类型提取出来
+  - K：一个泛型参数，代表事件名。
+  - K extends keyof Events：限制 K 必须是 Events 中存在的键，也就是只能是实际存在的事件名。
+  - Events[K]：通过键 K 取出 Events 中对应属性的类型。*/
 export type EventListener<K extends keyof Events> = Events[K]
 
-export class EventBus {
-  private hooks = new Map<string, Hook[]>()
 
+export class EventBus {
+  // private类型只能在类内访问
+  private hooks = new Map<string, Hook[]>()
+  
   /** 注册监听器（返回 disposer） */
+  //此处返回无参函数体() => this.off(name, listener)，实现在调用  const unsubscribe = emitter.on("data", handler)时只注册
+  //再调用unsubscribe()时调用emitter.off("data", handler)
   on<K extends keyof Events>(name: K, listener: Events[K], options?: { prepend?: boolean }): () => void {
     const list = this.hooks.get(name as string) ?? []
     const hook: Hook = { listener: listener as Listener, prepend: options?.prepend ?? false }
-    if (hook.prepend) list.unshift(hook)
-    else list.push(hook)
+    if (hook.prepend){list.unshift(hook)}
+    else {list.push(hook)}
     this.hooks.set(name as string, list)
     return () => this.off(name, listener)
   }
@@ -49,7 +66,7 @@ export class EventBus {
   off<K extends keyof Events>(name: K, listener: Events[K]): void {
     const list = this.hooks.get(name as string)
     if (!list) return
-    this.hooks.set(name as string, list.filter((h) => h.listener !== listener))
+    this.hooks.set(name as string, list.filter((h) => h.listener !== listener))//移除事件name的指定监听器
   }
 
   private resolve(name: string): Hook[] {

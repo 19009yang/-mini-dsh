@@ -4,7 +4,10 @@
     // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
-
+    "baseUrl": ".",
+    "paths": {
+        "@mini-dsh/*": ["packages/mini-dsh/src/*.ts"]
+    },
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",

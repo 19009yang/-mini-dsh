@@ -8,7 +8,7 @@
  */
 import type { Context } from '@mini-dsh/context'
 import { Service } from '@mini-dsh/service'
-import type { GenerateOptions, LlmFailure, StreamChunk } from './types'
+import type { GenerateOptions, LlmFailure, StreamChunk } from './types.js'
 
 export interface LlmProviderInfo {
   id: string

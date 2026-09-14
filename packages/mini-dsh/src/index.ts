@@ -14,22 +14,22 @@ export type { Plugin, PluginConfig, PluginInstance, Disposable } from '@mini-dsh
 export type {
   Message, ContentBlock, TextBlock, ReasoningBlock, ToolCallBlock, ToolResultBlock,
   StreamChunk, GenerateOptions, ToolSchema, LlmCallConfig, TokenUsage, FinishReason, LlmFailure,
-} from './llm/types'
-export { BlockAssembler, textOf } from './llm/types'
-export { LlmAdapter, LlmRuntime } from './llm/adapter'
-export { MockAdapter, apply as mockAdapterPlugin } from './llm/adapters/mock'
-export { OpenAICompatAdapter, apply as openaiCompatAdapterPlugin } from './llm/adapters/openai-compat'
+} from './llm/types.js'
+export { BlockAssembler, textOf } from './llm/types.js'
+export { LlmAdapter, LlmRuntime } from './llm/adapter.js'
+export { MockAdapter, apply as mockAdapterPlugin } from './llm/adapters/mock.js'
+export { OpenAICompatAdapter, apply as openaiCompatAdapterPlugin } from './llm/adapters/openai-compat.js'
 
-export { Session } from './agent/session'
-export type { SessionEvent } from './agent/session'
+export { Session } from './agent/session.js'
+export type { SessionEvent } from './agent/session.js'
 export {
   ToolRegistry,
-} from './agent/tools'
+} from './agent/tools.js'
 export type {
   ToolDefinition, ToolExecution, ToolExecutionResult,
   PreToolDecision, PostToolDecision,
-} from './agent/tools'
-export { SystemPrompt } from './agent/system-prompt'
-export type { PromptSection, PromptAssembly } from './agent/system-prompt'
-export { Agent, AgentRegistry } from './agent/agent'
-export type { AgentOptions, AgentStatus, PreStepDecision } from './agent/agent'
+} from './agent/tools.js'
+export { SystemPrompt } from './agent/system-prompt.js'
+export type { PromptSection, PromptAssembly } from './agent/system-prompt.js'
+export { Agent, AgentRegistry } from './agent/agent.js'
+export type { AgentOptions, AgentStatus, PreStepDecision } from './agent/agent.js'

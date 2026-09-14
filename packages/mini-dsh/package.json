@@ -1,5 +1,5 @@
 {
-  "name": "@mini-dsh",
+  "name": "@mini-dsh/core",
   "version": "1.0.0",
   "description": "",
   "exports": {

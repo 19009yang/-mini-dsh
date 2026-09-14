@@ -37,18 +37,16 @@ export interface PluginClass extends PluginBase {
   new (ctx: Context, config?: PluginConfig): unknown
 }
 
-/** 插件实例的运行状态 */
+
+//定义插件实例所需属性和method
 export interface PluginInstance {
   name: string
-  inject: string[]
+  inject: string[] //插件依赖的服务名称列表
   state: 'pending' | 'starting' | 'active' | 'disposed'
-  /** 该实例注册的 disposer（逆序执行） */
-  disposers: Disposable[]
-  /** 该实例提供的服务名 */
+  disposers: Disposable[]  //插件注册的清理函数或清理对象
   provides: string[]
-  /** 启动 apply（依赖满足时由 Context 调用） */
-  start(): Promise<void>
-  dispose(): Promise<void>
+  start(): Promise<void> //异步启动
+  dispose(): Promise<void> //异步销毁
 }
 
 /**
@@ -68,18 +66,22 @@ export function instantiate(plugin: Plugin, ctx: Context, config?: PluginConfig)
     state: 'pending',
     disposers,
     provides,
-    async start() {
+    async start(){
       this.state = 'starting' // 先标记，避免 provide 触发的 wakePlugins 重复启动自己
       ctx.activate(this) // 让 effect() 归属到当前实例
-      if (typeof plugin === 'function') {
-        await (plugin as PluginFunction)(ctx, config)
-      } else if ('apply' in plugin) {
-        await (plugin as PluginObject).apply(ctx, config)
-      } else {
-        new (plugin as PluginClass)(ctx, config) // 类：构造即 apply
+      try{
+        if (typeof plugin === 'function') {
+          await (plugin as PluginFunction)(ctx, config)
+        } else if ('apply' in plugin) {
+          await (plugin as PluginObject).apply(ctx, config) //对象插件，具有apply属性
+        } else {
+          new (plugin as PluginClass)(ctx, config) // 类：构造即 apply
+        }
+        this.state = 'active'
+      }finally{
+        ctx.deactivate()
       }
-      ctx.deactivate()
-      this.state = 'active'
+      //使用try{}finally确保ctx.deactivate()不会因为插件启动出错而不调用
     },
     async dispose() {
       ctx.deactivate()
@@ -90,6 +92,7 @@ export function instantiate(plugin: Plugin, ctx: Context, config?: PluginConfig)
       disposers.length = 0
       this.state = 'disposed'
     },
+    //插件启动过程中,通过 ctx.effect() 或 ctx.on() 将清理函数加入当前插件的 disposers
   }
   return instance
 }

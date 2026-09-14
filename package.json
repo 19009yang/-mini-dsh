@@ -1,7 +1,8 @@
 {
-  "name": "mini-dsh",
+  "name": "mini-dsh-workspace",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "",
   "workspaces": [
     "packages/*",
