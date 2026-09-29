@@ -11,6 +11,7 @@
     - 无 fiber 状态机与 HMR
 */
 
+//注销行为被写成函数，在注册时返回但不执行，一并存入disposers后在卸载时执行
 
 import { EventBus, type Events } from '@mini-dsh/events'
 import type { Disposable, Plugin, PluginConfig, PluginInstance } from '@mini-dsh/plugin'
@@ -56,7 +57,7 @@ export class Context {
     }
   }
 
-  //判断该服务是否存在
+  /** 判断该服务是否存在 */
   has(name: string): boolean {
     return this.services.has(name)
   }
@@ -87,14 +88,14 @@ export class Context {
 
   /** 服务变化时，唤醒依赖已满足的 pending 插件 */
   private wakePlugins(): void {
-    for (const instance of this.plugins.values()) {
+    for (const instance of this.plugins.values()) { //const确保instance不会被重新赋值
       if (instance.state === 'pending' && instance.inject.every((dep) => this.services.has(dep))) {
         void instance.start().then(() => this.events.emit('plugin/started', instance))
       }
     }
-  }
+  }//用于批量唤醒
 
-  /** 提供者卸载：级联卸载依赖它的插件 */
+  /** 暂停使用依赖指定服务的插件，服务再次提供后可恢复 */
   private unloadDependents(serviceName: string): void {
     for (const instance of this.plugins.values()) {
       if (instance.state === 'active' && instance.inject.includes(serviceName)) {
@@ -106,7 +107,7 @@ export class Context {
     }
   }
 
-  /** 卸载一个插件（按 id 或实例） */
+  /** 移除插件（按 id 或实例） */
   async unload(instance: PluginInstance): Promise<void> {
     for (const [id, inst] of this.plugins) {
       if (inst === instance) {
@@ -118,7 +119,7 @@ export class Context {
     }
   }
 
-  /** 卸载全部插件（进程退出时调用） */
+  /** 移除全部插件（进程退出时调用） */
   async dispose(): Promise<void> {
     for (const instance of [...this.plugins.values()].reverse()) {
       if (instance.state === 'active') await instance.dispose()
@@ -137,12 +138,12 @@ export class Context {
     if (this.current) {
       this.current.disposers.push(disposer)
     }
-    return disposer
+    return disposer //返回 disposer，让调用方也可以主动清理
   }
 
   /** 事件监听（自动随当前插件卸载移除——见 effect） */
   on<K extends keyof Events>(name: K, listener: Events[K], options?: { prepend?: boolean }): () => void {
-    const off = this.events.on(name, listener, options)
+    const off = this.events.on(name, listener, options) //对events中on函数的封装，注册事件监听器，并把取消监听的函数纳入统一清理机制
     if (this.current) {
       this.current.disposers.push(off)
     }
@@ -154,7 +155,7 @@ export class Context {
     this.current = instance
   }
 
-  //取消标记
+  //取消正在启动的插件标记
   deactivate(): void {
     this.current = null
   }

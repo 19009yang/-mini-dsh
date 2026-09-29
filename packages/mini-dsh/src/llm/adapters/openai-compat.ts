@@ -9,11 +9,12 @@
  * 注意 StreamChunk 协议义务：每个打开的块都要以 block-end 收尾，
  * usage 必须先于 finish 发出。
  *
- * 配置走环境变量：
+ * 配置走环境变量（插件初始化时从当前工作目录加载 .env）：
  *   OPENAI_BASE_URL  默认 https://api.deepseek.com
  *   OPENAI_API_KEY   必填
- *   OPENAI_MODEL     默认 deepseek-chat
+ *   模型由每次调用的 options.model 指定
  */
+import { config as loadDotEnv } from 'dotenv'
 import type { Context } from '@mini-dsh/context'
 import type { FinishReason, GenerateOptions, StreamChunk } from '@mini-dsh/llm/types'
 import { LlmAdapter } from '@mini-dsh/llm/adapter'
@@ -92,7 +93,7 @@ export class OpenAICompatAdapter extends LlmAdapter {
         authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify(body),
-      signal: options.signal,
+      signal: options.signal ?? null,
     })
 
     if (!res.ok || !res.body) {
@@ -221,6 +222,7 @@ export class OpenAICompatAdapter extends LlmAdapter {
 }
 
 export function apply(ctx: Context): void {
+  loadDotEnv({ quiet: true })
   const apiKey = process.env.OPENAI_API_KEY
   const baseURL = process.env.OPENAI_BASE_URL ?? 'https://api.deepseek.com'
   const adapter = new OpenAICompatAdapter(baseURL, apiKey ?? '')

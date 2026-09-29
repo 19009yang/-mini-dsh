@@ -30,7 +30,7 @@ declare module '@mini-dsh/events' {
   }
 }
 
-/** 提供方适配器：只负责把一次请求翻译成 chunk 流 */
+/**模型适配器的基类，提供方适配器：只负责把一次请求翻译成 chunk 流 */
 export abstract class LlmAdapter {
   abstract stream(options: GenerateOptions): AsyncIterable<StreamChunk>
 
@@ -40,6 +40,7 @@ export abstract class LlmAdapter {
   }
 }
 
+//注册和查找适配器
 export class LlmRuntime extends Service {
   private adapters = new Map<string, LlmAdapter>()
 
@@ -63,6 +64,7 @@ export class LlmRuntime extends Service {
     })
   }
 
+  /** 把当前已注册的模型提供方整理成一个列表 如[{ id: 'mock', name: 'mock' }] */
   listProviders(): LlmProviderInfo[] {
     return [...this.adapters.keys()].map((id) => ({ id, name: this.adapters.get(id)!.providerName(id) }))
   }

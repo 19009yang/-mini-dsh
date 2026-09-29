@@ -78,8 +78,8 @@ export type StreamChunk =
 /** 模型可见的工具 schema（JSON Schema） */
 export interface ToolSchema {
   name: string
-  description: string
-  parameters: Record<string, unknown>
+  description: string //工具用途
+  parameters: Record<string, unknown> //参数的 JSON Schema，描述参数结构
 }
 
 /** 一次完全装配好的模型请求 */

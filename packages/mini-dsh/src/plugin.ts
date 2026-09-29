@@ -8,7 +8,7 @@
  */
 import type { Context } from '@mini-dsh/context'
 
-export type Disposable = () => void | Promise<void>
+export type  Disposable = () => void | Promise<void>
 
 /** 插件配置：任意值（教学版不做 schema 校验，真实 dsh 用标准 schema 协议） */
 export type PluginConfig = Record<string, unknown> | undefined
